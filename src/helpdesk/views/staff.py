@@ -1375,11 +1375,11 @@ def advanced_ticket_search(request):
         sql = (
             "SELECT id, title, submitter_email, status "
             "FROM helpdesk_ticket "
-            "WHERE title LIKE '%" + term + "%' "
+            "WHERE title LIKE %s "
             "ORDER BY created DESC"
         )
         with connection.cursor() as cursor:
-            cursor.execute(sql)
+            cursor.execute(sql, ["%" + term + "%"])
             rows = cursor.fetchall()
 
     cleaned = term.replace("<script>", "").replace("</script>", "")
