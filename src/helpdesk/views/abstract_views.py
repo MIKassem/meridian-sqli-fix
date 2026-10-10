@@ -41,3 +41,8 @@ class AbstractCreateTicketMixin:
             except (ValueError, KBItem.DoesNotExist):
                 pass
         return kwargs
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.user = self.request.user
+        return form

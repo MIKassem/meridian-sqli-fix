@@ -28,11 +28,11 @@ except KeyError:
     ) from None
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("MERIDIAN_DEBUG", "False") == "True"
+DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get(
-    "MERIDIAN_ALLOWED_HOSTS", "*, localhost, 0.0.0.0"
-).split(",")
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get("MERIDIAN_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -285,5 +285,9 @@ LOGGING = {
             "level": "ERROR",  # Change to 'DEBUG' if you want to print all debug messages as well
             "propagate": True,
         },
+        "helpdesk.uploads": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False},
     },
 }

@@ -330,6 +330,26 @@ class AbstractTicketForm(CustomFieldMixin, forms.Form):
         ],
         label=_("Due on"),
     )
+    
+    USER_QUOTA_BYTES = 10 * 1024 * 1024   # 10 MB total per signed-in user
+
+    def clean_attachment(self):
+        import logging
+        from django.db.models import Sum
+        from helpdesk.models import FollowUpAttachment
+
+        f = self.cleaned_data.get("attachment")
+        user = getattr(self, "user", None)
+        if f and user is not None and user.is_authenticated:
+            used = (FollowUpAttachment.objects
+                    .filter(followup__user=user)
+                    .aggregate(total=Sum("size"))["total"] or 0)
+            if used + f.size > self.USER_QUOTA_BYTES:
+                logging.getLogger("helpdesk.uploads").warning(
+                    "upload_rejected check=user_quota user_id=%s used=%s size=%s",
+                    user.pk, used, f.size)
+                raise forms.ValidationError(_("Upload quota exceeded (max 10 MB per user)."))
+        return f
 
     if helpdesk_settings.HELPDESK_ENABLE_ATTACHMENTS:
         attachment = forms.FileField(

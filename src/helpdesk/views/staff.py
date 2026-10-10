@@ -1460,12 +1460,15 @@ def download_attachment(request):
     """Download an attachment by its stored path under the media directory."""
     import os
 
+    base = os.path.realpath(settings.MEDIA_ROOT)
     rel = request.GET.get("path", "")
-    full = os.path.join(settings.MEDIA_ROOT, rel)
+    full = os.path.realpath(os.path.join(base, rel))
+    if os.path.commonpath([base, full]) != base or not os.path.isfile(full):
+        return HttpResponse(status=404)
     with open(full, "rb") as handle:
         data = handle.read()
     response = HttpResponse(data, content_type="application/octet-stream")
-    response["Content-Disposition"] = f'attachment; filename="{os.path.basename(rel)}"'
+    response["Content-Disposition"] = f'attachment; filename="{os.path.basename(full)}"'
     return response
 
 

@@ -51,6 +51,10 @@ class EscapeHtml(Extension):
         md.preprocessors.deregister("html_block")
         md.inlinePatterns.deregister("html")
 
+def safe_attachment_filename(filename):
+    """Replace the uploaded filename with a random one, keeping only the extension."""
+    ext = os.path.splitext(filename)[1]
+    return f"{uuid.uuid4().hex}{ext}"
 
 def get_markdown(text):
     """
@@ -1297,7 +1301,7 @@ class FollowUpAttachment(Attachment):
             and not os.path.exists(att_path)
         ):
             os.makedirs(att_path, helpdesk_settings.HELPDESK_ATTACHMENT_DIR_PERMS)
-        return os.path.join(path, filename)
+        return os.path.join(path, safe_attachment_filename(filename))
 
 
 class KBIAttachment(Attachment):
@@ -1315,7 +1319,7 @@ class KBIAttachment(Attachment):
             and not os.path.exists(att_path)
         ):
             os.makedirs(att_path, helpdesk_settings.HELPDESK_ATTACHMENT_DIR_PERMS)
-        return os.path.join(path, filename)
+        return os.path.join(path, safe_attachment_filename(filename))
 
 
 class PreSetReply(models.Model):
